@@ -7,7 +7,7 @@
 #include "tusb.h"
 #include "bsp/board.h"
 
-#define BAUD_RATE 38400
+#define BAUD_RATE 115200
 
 /* Blink pattern
  * - 250 ms  : device not mounted
@@ -87,20 +87,15 @@ void init()
     board_init();
     tusb_init();
 
-	//TODO UART機能のON/OFFが出来るにようにする
 	//uart
 
 	// Set up our UART with the required speed.
-    uart_init(uart1, BAUD_RATE);
+    uart_init(uart0, BAUD_RATE);
 
     // Set the TX and RX pins by using the function select on the GPIO
     // Set datasheet for more information on function select
-    gpio_set_function(6, GPIO_FUNC_UART);
-    gpio_set_function(7, GPIO_FUNC_UART);
-
-	//試しの送信
-	// Send out a string, with CR/LF conversions
-    uart_puts(uart1, " Hello, UART!\n");
+    gpio_set_function(0, GPIO_FUNC_UART);
+    gpio_set_function(1, GPIO_FUNC_UART);
 }
 
 void ctrl_task()
@@ -110,18 +105,37 @@ void ctrl_task()
 	constexpr uint32_t interval_ms = 10;//ms
 	static uint32_t counter = 0;
 
+	static uint8_t rxbuf[8];
+	static uint8_t rxbufptr = 0;
+
+	//10ms間隔にする
 	if (board_millis() - start_ms < interval_ms) return; // not enough time
 	start_ms += blink_interval_ms;
 
-	counter++;
-	if (counter == 150) {
-		JoystickReport.Button.L = 1;
-		JoystickReport.Button.R = 1;
-	}
-	else if (counter >= 200) {
-		JoystickReport.Button.L = 0;
-		JoystickReport.Button.R = 0;
-		counter = 0;
+	//uartの受信バッファを読む
+	while (true) {
+		if (uart_is_readable(uart0) == false) break;
+		uint8_t c;
+		uart_read_blocking(uart0, &c, 1);
+		if ((c & 0x80) != 0) {
+			rxbuf[0] = c;
+			rxbufptr = 1;
+		}
+		else {
+			rxbuf[rxbufptr] = c;
+			rxbufptr++;
+			if (rxbufptr == 8) {
+				JoystickReport.B[0] = ((rxbuf[0] & 0x7F) << 1) + ((rxbuf[1] & 0x40) >> 6);
+				JoystickReport.B[1] = ((rxbuf[1] & 0x3F) << 2) + ((rxbuf[2] & 0x60) >> 5);
+				JoystickReport.B[2] = ((rxbuf[2] & 0x1F) << 3) + ((rxbuf[3] & 0x70) >> 4);
+				JoystickReport.B[3] = ((rxbuf[3] & 0x0F) << 4) + ((rxbuf[4] & 0x78) >> 3);
+				JoystickReport.B[4] = ((rxbuf[4] & 0x07) << 5) + ((rxbuf[5] & 0x7C) >> 2);
+				JoystickReport.B[5] = ((rxbuf[5] & 0x03) << 6) + ((rxbuf[6] & 0x7E) >> 1);
+				JoystickReport.B[6] = ((rxbuf[6] & 0x01) << 7) + ((rxbuf[7] & 0x7F) >> 0);
+				JoystickReport.B[7] = 0;
+				rxbufptr = 0;
+			}
+		}
 	}
 
 	if ( tud_suspended() ) {

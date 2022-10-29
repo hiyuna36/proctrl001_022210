@@ -1,0 +1,12 @@
+[参考]
+
+NintendoSwitchControlLibrary
+https://github.com/lefmarna/NintendoSwitchControlLibrary
+
+Switch Control Library
+https://github.com/celclow/SwitchControlLibrary
+
+[ソースコードの一部を使用]
+
+Switch Control Library
+https://github.com/celclow/SwitchControlLibrary
