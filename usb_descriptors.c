@@ -11,10 +11,6 @@
 #define USB_PID           (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
                            _PID_MAP(MIDI, 3) | _PID_MAP(VENDOR, 4) )
 
-//TI MSP430 USB HID DATAPIPE
-//#define TI_MSP430_USB_HID_DATAPIPE_VID 0x2047	// Vendor ID (VID)
-//#define TI_MSP430_USB_HID_DATAPIPE_PID 0x0301	// Product ID (PID)
-
 //#define NSPCH_VID 0xCafe	// Vendor ID (VID)
 //#define NSPCH_PID USB_PID	// Product ID (PID)
 
@@ -37,8 +33,6 @@ tusb_desc_device_t const desc_device =
 	.bDeviceProtocol    = 0x00,
 	.bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
 
-	//.idVendor           = 0xCafe,
-	//.idProduct          = USB_PID,
 	.idVendor           = NSPCH_VID,
 	.idProduct          = NSPCH_PID,
 	.bcdDevice          = 0x0100,
@@ -61,31 +55,7 @@ uint8_t const * tud_descriptor_device_cb(void)
 // HID Report Descriptor
 //--------------------------------------------------------------------+
 
-////TI MSP430 USB HID DATAPIPE
-//uint8_t const desc_hid_report[] =
-//{
-//	0x06, 0x00, 0xff,    // Usage Page (Vendor Defined)
-//    0x09, 0x01,    // Usage Page (Vendor Defined)
-//    0xa1, 0x01,    // COLLECTION (Application)
-//    0x85, 0x3f,    // Report ID (Vendor Defined)
-//    0x95, MAX_PACKET_SIZE-1,    // Report Count
-//    0x75, 0x08,    // Report Size
-//    0x25, 0x01,    // Usage Maximum
-//    0x15, 0x01,    // Usage Minimum
-//    0x09, 0x01,    // Vendor Usage
-//    0x81, 0x02,    // Input (Data,Var,Abs)
-//    0x85, 0x3f,    // Report ID (Vendor Defined)
-//    0x95, MAX_PACKET_SIZE-1,    //Report Count
-//    0x75, 0x08,    // Report Size
-//    0x25, 0x01,    // Usage Maximum
-//    0x15, 0x01,    // Usage Minimum
-//    0x09, 0x01,    // Vendor Usage
-//    0x91 ,0x02,    // Ouput (Data,Var,Abs)
-//    0xc0    // end Application Collection
-//};
-
-//HORI switchプロコン 互換？のHIDレポート？
-//VID=0x0f0d, PID=0x0092 にする
+//switchプロコン互換のHIDレポート
 static const uint8_t desc_hid_report[] = {
     0x05, 0x01,       //   USAGE_PAGE (Generic Desktop)
     0x09, 0x05,       //   USAGE (Game Pad)
